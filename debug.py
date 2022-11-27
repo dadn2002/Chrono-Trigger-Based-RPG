@@ -8,7 +8,7 @@ import openpyxl
 import xlsxwriter
 from random import *
 from openpyxl.utils import get_column_letter
-from deftech import tech
+from deftech import tech, grouptechs
 
 
 def colNameToNum(name):
@@ -83,7 +83,7 @@ def ReadStatus(Player):
     print('[Process:', localvar, ']', 'Success')
 
 
-def Inventory(action, name=None, nametype=None, mod=None):
+def Inventory(action, name=None, nametype='item', mod=None):
     global globalvar
     localvar = globalvar
     globalvar = globalvar + 1
@@ -112,6 +112,7 @@ def Inventory(action, name=None, nametype=None, mod=None):
         return LotofItems
     elif (action.lower() == 'add' or action.lower() == 'remove') and name is not None:
         # print('plus')
+
         if nametype.lower() == 'gold':
             LotofThings['H2'] = int(LotofThings['H2'].value) + int(name)
             Invobj.save(Inv)
@@ -157,6 +158,144 @@ def Inventory(action, name=None, nametype=None, mod=None):
     Invobj.save(Inv)
 
     # print('[Process:', localvar, ']', 'Success')
+
+
+def ReadBossData(name):
+    global globalvar
+    localvar = globalvar
+    globalvar = globalvar + 1
+    print('[Process:', localvar, ']', 'ReadMonsterData', name)
+
+    Bosses = Path("Bosses.xlsx")
+    Bossesobj = openpyxl.load_workbook(Bosses, data_only=True)
+    Bossesxlsx = Bossesobj.active
+
+    EnemyStatus = [['' for x in range(1)] for y in range(19)]
+    name = name.lower()
+    test = False
+    # Return the vector EnemyStatus[19] := HP, XP, TP, GOLD, Charmables[255], Drops[255], Location[255], ATK, DEF,
+    # MAG, MDEF, SPD, EVA, HIT, Weakness[255], Resis[255], Absorbs[255], Techs[255], Counter[255].
+    for i in range(2048):
+        temprp = colNameToNum('C')
+        i = 8 * i
+        temp = Bossesxlsx[str(get_column_letter(temprp + i)) + '4'].value
+        # print(temp, name)
+        if temp is None:
+            break
+        if temp.lower() == name:
+            test = True
+            # print('debug', name, get_column_letter(temprp+i)+'4')
+            line1 = 0
+            line2 = 0
+            line3 = 0
+            # print(EnemyStatus)
+            for j in range(255):
+                if Bossesxlsx[str(get_column_letter(temprp + i + 1)) + str(5 + j)].value == 'HP':
+                    line1 = str(5 + j + 1)
+                elif Bossesxlsx[str(get_column_letter(temprp + i + 1)) + str(5 + j)].value == 'Attack':
+                    line2 = str(5 + j + 1)
+                elif Bossesxlsx[str(get_column_letter(temprp + i + 1)) + str(5 + j)].value == 'Weaknesses':
+                    line3 = str(5 + j + 1)
+            EnemyStatus[0][0] = Bossesxlsx[str(get_column_letter(temprp + i + 1)) + line1].value  # HP
+            EnemyStatus[1][0] = Bossesxlsx[str(get_column_letter(temprp + i + 2)) + line1].value  # XP
+            EnemyStatus[2][0] = Bossesxlsx[str(get_column_letter(temprp + i + 3)) + line1].value  # TP
+            EnemyStatus[3][0] = Bossesxlsx[str(get_column_letter(temprp + i + 4)) + line1].value  # GOLD
+
+            EnemyStatus[4][0] = Bossesxlsx[str(get_column_letter(temprp + i + 5)) + line1].value  # CHARMABLES
+            if EnemyStatus[4][0] != "None":
+                # print('test', EnemyStatus[4][0])
+                for j in range(255):
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 5)) + str(int(line1) + j + 1)].value
+                    if tempes != 'Speed':
+                        EnemyStatus[4].append(tempes)
+                    else:
+                        break
+
+            EnemyStatus[5][0] = Bossesxlsx[str(get_column_letter(temprp + i + 6)) + line1].value  # DROPS
+            if EnemyStatus[5][0] != "None":
+                for j in range(255):
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 6)) + str(int(line1) + j + 1)].value
+                    if tempes != 'Evade':
+                        EnemyStatus[5].append(tempes)
+                    else:
+                        break
+
+            EnemyStatus[6][0] = Bossesxlsx[str(get_column_letter(temprp + i + 7)) + line1].value  # LOCATION
+            if EnemyStatus[6][0] != "None":
+                for j in range(255):
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 7)) + str(int(line1) + j + 1)].value
+                    if tempes != 'Hit':
+                        EnemyStatus[6].append(tempes)
+                    else:
+                        break
+
+            EnemyStatus[7][0] = Bossesxlsx[str(get_column_letter(temprp + i + 1)) + line2].value  # ATK
+            EnemyStatus[8][0] = Bossesxlsx[str(get_column_letter(temprp + i + 2)) + line2].value  # DEF
+            EnemyStatus[9][0] = Bossesxlsx[str(get_column_letter(temprp + i + 3)) + line2].value  # MAG
+            EnemyStatus[10][0] = Bossesxlsx[str(get_column_letter(temprp + i + 4)) + line2].value  # MDEF
+            EnemyStatus[11][0] = Bossesxlsx[str(get_column_letter(temprp + i + 5)) + line2].value  # SPD
+            EnemyStatus[12][0] = Bossesxlsx[str(get_column_letter(temprp + i + 6)) + line2].value  # EVA
+            EnemyStatus[13][0] = Bossesxlsx[str(get_column_letter(temprp + i + 7)) + line2].value  # HIT
+
+            EnemyStatus[14][0] = Bossesxlsx[str(get_column_letter(temprp + i + 1)) + line3].value  # WEAKNESS
+            if EnemyStatus[14][0] != "None":
+                # print(EnemyStatus[14][0])
+                for j in range(255):
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 1)) + str(int(line3) + j + 1)].value
+                    if tempes is not None:
+                        EnemyStatus[14].append(tempes)
+                    else:
+                        break
+
+            EnemyStatus[15][0] = Bossesxlsx[str(get_column_letter(temprp + i + 2)) + line3].value  # RESIS
+            if EnemyStatus[15][0] != "None":
+                for j in range(255):
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 2)) + str(int(line3) + j + 1)].value
+                    if tempes is not None:
+                        EnemyStatus[15].append(tempes)
+                    else:
+                        break
+
+            EnemyStatus[16][0] = Bossesxlsx[str(get_column_letter(temprp + i + 3)) + line3].value  # ABSORBS
+            if EnemyStatus[16][0] != "None":
+                for j in range(255):
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 3)) + str(int(line3) + j + 1)].value
+                    if tempes is not None:
+                        EnemyStatus[16].append(tempes)
+                    else:
+                        break
+
+            EnemyStatus[17][0] = Bossesxlsx[str(get_column_letter(temprp + i + 4)) + line3].value  # TECHS
+            if EnemyStatus[17][0] != "None":
+                for j in range(255):
+                    # print(get_column_letter((temprp+i+4)), int(line3)+j+1)
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 4)) + str(int(line3) + j + 1)].value
+                    if tempes is not None:
+                        EnemyStatus[17].append(tempes)
+                    else:
+                        break
+
+            EnemyStatus[18][0] = Bossesxlsx[str(get_column_letter(temprp + i + 6)) + line3].value  # COUNTER
+            if EnemyStatus[18][0] != "None":
+                for j in range(255):
+                    tempes = Bossesxlsx[str(get_column_letter(temprp + i + 6)) + str(int(line3) + j + 1)].value
+                    if tempes is not None:
+                        EnemyStatus[18].append(tempes)
+                    else:
+                        break
+
+            # print('debug', line1, line2, line3)
+            # print('debug', name, EnemyStatus)
+            wait = input()
+            break
+        i = i / 8
+
+    # Enemiesobj.save(Enemies)
+    # print('[Process:', localvar, ']', 'Success')
+    if test:
+        return EnemyStatus
+    else:
+        return None
 
 
 def ReadMonsterData(name):
@@ -1007,48 +1146,70 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
     temprpp0 = ''
     temprpp1 = ''
     temprpp2 = ''
+    techp = ['', '', '']
     if party[0].lower() == "crono":
-        temprpp0 = 'C'
+        temprpp0 = 'C'  # Related to player data
+        techp[0] = 'K'  # Related to TP
     elif party[0].lower() == "marle":
         temprpp0 = 'K'
+        techp[0] = 'M'
     elif party[0].lower() == "lucca":
         temprpp0 = 'G'
+        techp[0] = 'L'
     elif party[0].lower() == "frog":
         temprpp0 = 'O'
+        techp[0] = 'N'
     elif party[0].lower() == "robo":
         temprpp0 = 'S'
+        techp[0] = 'O'
     elif party[0].lower() == "ayla":
         temprpp0 = 'W'
+        techp[0] = 'P'
     elif party[0].lower() == "magus":
         temprpp0 = 'AA'
+        techp[0] = 'Q'
     if party[1].lower() == "crono":
         temprpp1 = 'C'
+        techp[1] = 'K'
     elif party[1].lower() == "marle":
         temprpp1 = 'K'
+        techp[1] = 'M'
     elif party[1].lower() == "lucca":
         temprpp1 = 'G'
+        techp[1] = 'L'
     elif party[1].lower() == "frog":
         temprpp1 = 'O'
+        techp[1] = 'N'
     elif party[1].lower() == "robo":
         temprpp1 = 'S'
+        techp[1] = 'O'
     elif party[1].lower() == "ayla":
         temprpp1 = 'W'
+        techp[1] = 'P'
     elif party[1].lower() == "magus":
         temprpp1 = 'AA'
+        techp[1] = 'Q'
     if party[2].lower() == "crono":
         temprpp2 = 'C'
+        techp[2] = 'K'
     elif party[2].lower() == "marle":
         temprpp2 = 'K'
+        techp[2] = 'M'
     elif party[2].lower() == "lucca":
         temprpp2 = 'G'
+        techp[2] = 'L'
     elif party[2].lower() == "frog":
         temprpp2 = 'O'
+        techp[2] = 'N'
     elif party[2].lower() == "robo":
         temprpp2 = 'S'
+        techp[2] = 'O'
     elif party[2].lower() == "ayla":
         temprpp2 = 'W'
+        techp[2] = 'P'
     elif party[2].lower() == "magus":
         temprpp2 = 'AA'
+        techp[2] = 'Q'
     temprpp01 = colNameToNum(temprpp0)
     temprpp11 = colNameToNum(temprpp1)
     temprpp21 = colNameToNum(temprpp2)
@@ -1187,13 +1348,28 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                 else:
                     monster[i] = 'Mad Bat'
             # print('debug', mobn, monster)
+        if maps.lower() == 'yakra - middle age':
+            confirm = input('Do you wanna fight Yakra(Y/N)? ')
+            if confirm.lower() == 'y':
+                mobn = 1
+                monster = [''] * mobn
+                monster[0] = 'Yakra'
+                # print(str(mobn) + 'd20, each value translate into one different mob')
+                # print('debug', mobn, monster)
+            else:
+                return 0
+            # print('debug', mobn, monster)
+
     monsterdata = [''] * len(monster)
     ActionTimer = [''] * (len(monster) + len(party))
     ActionTimer[0] = Characters[get_column_letter(temprpp01 + 1) + str(10)].value
     ActionTimer[1] = Characters[get_column_letter(temprpp11 + 1) + str(10)].value
     ActionTimer[2] = Characters[get_column_letter(temprpp21 + 1) + str(10)].value
     for j in range(len(monster)):
-        monsterdata[j] = ReadMonsterData(monster[j])
+        if monster[j] == 'Yakra':
+            monsterdata[j] = ReadBossData(monster[j])
+        else:
+            monsterdata[j] = ReadMonsterData(monster[j])
         ActionTimer[j + 3] = int(str(monsterdata[j][11]).replace('[', '').replace(']', ''))
     for j in range(len(ActionTimer)):
         ActionTimer[j] = maxspeed - int(ActionTimer[j])  # Max Speed is 20
@@ -1243,12 +1419,24 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                     # print(monsterdata[j])
                     # print(monsterdata[j][5])
                     for k in range(len(monsterdata[j][5])):
-                        lootbag.append(str(monsterdata[j][5][k]))
+                        if str(monsterdata[j][5][k]) != 'None':
+                            lootbag.append(str(monsterdata[j][5][k]))
                     totalxp = totalxp + int(monsterdata[j][1][0])
                     totaltp = totaltp + int(monsterdata[j][2][0])
                     totalgold = totalgold + int(monsterdata[j][3][0])
+
             # print(totalxp, totaltp, totalgold, lootbag)
-            Characters[get_column_letter(temprpp01 + 1) + '6'] = Characters[get_column_letter(temprpp01 + 1) + '6'].value + totalxp
+
+            # SAVING THE XP GAIN
+            # print(get_column_letter(temprpp01+1), Characters[get_column_letter(temprpp01 + 1) + '16'].value)
+            Characters[get_column_letter(temprpp01 + 1) + '16'] = int(Characters[get_column_letter(
+                temprpp01 + 1) + '16'].value) + totalxp
+            Characters[get_column_letter(temprpp11 + 1) + '16'] = int(Characters[get_column_letter(
+                temprpp11 + 1) + '16'].value) + totalxp
+            Characters[get_column_letter(temprpp21 + 1) + '16'] = int(Characters[get_column_letter(
+                temprpp21 + 1) + '16'].value) + totalxp
+
+            # PRINTING THE LOOT TABLE
             print('\nLOOT:')
             for j in range(len(lootbag)):
                 print('[' + str(j + 1) + ']', lootbag[j])
@@ -1257,6 +1445,18 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
             print('GOLD: ' + str(totalgold))
             for j in range(len(lootbag)):
                 Inventory('add', lootbag[j])
+            Inventory('add', int(totalgold), 'gold')
+
+            # SAVING THE TECH POINTS GAIN
+            TechListabc = Path("TechList.xlsx")
+            TechListabcobj = openpyxl.load_workbook(TechListabc, data_only=True)
+            TechList = TechListabcobj.active
+            # print(techp)
+            for j in range(3):
+                TechList[techp[j]+'4'] = int(TechList[techp[j]+'4'].value) + totaltp
+            playerdatavolatileobj.save(playerdatavolatile)
+            TechListabcobj.save(TechListabc)
+
             wait = input()
             break
 
@@ -1435,7 +1635,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                         else:
                             # Tech Attack Below
                             # print('do something')
-                            techchoice = randint(0, len(monsterdata[playturn[i]][17])-1)
+                            techchoice = randint(0, len(monsterdata[playturn[i]][17]) - 1)
                             thistech = monsterdata[playturn[i]][17][techchoice]
                             # print(thistech)
                             # print(monsterdata[playturn[i]][0])
@@ -1443,21 +1643,59 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                             # print(monsterdata[playturn[i]][9])
                             # print(monsterdata[playturn[i]][11])
                             # print(monsterdata[playturn[i]][13])
-                            techdamage = tech(thistech, HP=int(monsterdata[playturn[i]][0][0]), ATK=int(monsterdata[playturn[i]][7][0]), MAG=int(monsterdata[playturn[i]][9][0]), SPD=int(monsterdata[playturn[i]][11][0]), HIT=int(monsterdata[playturn[i]][13][0]), RNG=1)
+                            techdamage = tech(thistech, HP=int(monsterdata[playturn[i]][0][0]),
+                                              ATK=int(monsterdata[playturn[i]][7][0]),
+                                              MAG=int(monsterdata[playturn[i]][9][0]),
+                                              SPD=int(monsterdata[playturn[i]][11][0]),
+                                              HIT=int(monsterdata[playturn[i]][13][0]), RNG=1)
                             # print(techdamage)
 
-                            if techdamage[1] == 'PHY':
-                                reducedamage = math.floor(
-                                    techdamage[0] * (256 - int(Characters[get_column_letter(columletter + 1) + '7'].value)) / 256)
-                                print(str(monster[playturn[i]]), 'used', thistech, 'in', choosenone, 'dealing: ', reducedamage)
-                                Characters[get_column_letter(columletter + 2) + '4'] = int(
-                                    Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
-                            elif techdamage[1] == 'LIG' or techdamage[1] == 'SHA' or techdamage[1] == 'FIR' or techdamage[1] == 'WAT':
-                                reducedamage = math.floor(
-                                    techdamage[0] * (101 - int(Characters[get_column_letter(columletter + 1) + '15'].value)) / 101)
-                                print(str(monster[playturn[i]]), 'used', thistech, 'in', choosenone, 'dealing: ', reducedamage)
-                                Characters[get_column_letter(columletter + 2) + '4'] = int(
-                                    Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
+                            if grouptechs(thistech):
+                                for j in range(3):
+                                    if j == 0:
+                                        columletter = temprpp01
+                                    elif j == 1:
+                                        columletter = temprpp11
+                                    elif j == 2:
+                                        columletter = temprpp21
+                                    choosenone = party[j]
+                                    if techdamage[1] == 'PHY':
+                                        reducedamage = math.floor(
+                                            techdamage[0] * (256 - int(
+                                                Characters[get_column_letter(columletter + 1) + '7'].value)) / 256)
+                                        print(str(monster[playturn[i]]), 'used', thistech, 'in', choosenone,
+                                              'dealing: ', reducedamage)
+                                        Characters[get_column_letter(columletter + 2) + '4'] = int(
+                                            Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
+                                    elif techdamage[1] == 'LIG' or techdamage[1] == 'SHA' or techdamage[1] == 'FIR' or \
+                                            techdamage[1] == 'WAT':
+                                        reducedamage = math.floor(
+                                            techdamage[0] * (101 - int(
+                                                Characters[get_column_letter(columletter + 1) + '15'].value)) / 101)
+                                        print(str(monster[playturn[i]]), 'used', thistech, 'in', choosenone,
+                                              'dealing: ', reducedamage)
+                                        Characters[get_column_letter(columletter + 2) + '4'] = int(
+                                            Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
+
+                                    if Characters[get_column_letter(columletter + 2) + '4'].value <= 0:
+                                        Characters[get_column_letter(columletter + 2) + '4'] = 0
+                            else:
+                                reducedamage = 0
+                                if techdamage[1] == 'PHY':
+                                    reducedamage = math.floor(
+                                        techdamage[0] * (256 - int(
+                                            Characters[get_column_letter(columletter + 1) + '7'].value)) / 256)
+                                    Characters[get_column_letter(columletter + 2) + '4'] = int(
+                                        Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
+                                elif techdamage[1] == 'LIG' or techdamage[1] == 'SHA' or techdamage[1] == 'FIR' or \
+                                        techdamage[1] == 'WAT':
+                                    reducedamage = math.floor(
+                                        techdamage[0] * (101 - int(
+                                            Characters[get_column_letter(columletter + 1) + '15'].value)) / 101)
+                                    Characters[get_column_letter(columletter + 2) + '4'] = int(
+                                        Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
+                                print(str(monster[playturn[i]]), 'used', thistech, 'in', choosenone, 'dealing: ',
+                                      reducedamage)
                             if Characters[get_column_letter(columletter + 2) + '4'].value <= 0:
                                 Characters[get_column_letter(columletter + 2) + '4'] = 0
 
@@ -1478,14 +1716,14 @@ subglobalval = globalvar
 print('[Process:', subglobalval, ']', 'Starting')
 globalvar = globalvar + 1
 
-party = ['crono', 'magus', 'lucca']
+party = ['crono', 'marle', 'lucca']
 # NewGamePlayer('crono')
 # NewGamePlayer('magus')
 # NewGamePlayer('lucca')
 # EquipItem('Armor', "Moonbeam Armor", 'crono')
-# LevelUpPlayer('crono', 50)
-# LevelUpPlayer('magus', 58)
-# LevelUpPlayer('marle', 22)
+LevelUpPlayer('crono', 10)
+LevelUpPlayer('marle', 10)
+LevelUpPlayer('lucca', 10)
 # print(ReadMonsterData('cyrus'))
 # UseItem('Speed Tab', 'crono', 'crono')
 # UseItem('Power Tab', 'crono', 'crono')
@@ -1501,6 +1739,7 @@ party = ['crono', 'magus', 'lucca']
 # Inventory('add', 'revive', 'item')
 # Inventory('add', 'revive', 'item')
 # Inventory('add', '10', 'gold')
-# battle('northern ruins - present', mod='vision')
+battle('guardia florest - present', mod='vision')
+# battle('yakra - middle age', mod='vision')
 
 print('[Process:', subglobalval, ']', 'End')

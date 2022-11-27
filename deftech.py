@@ -2,6 +2,43 @@
 
 # Just because it's too big
 
+def grouptechs(name):
+    # Return True if given tech is not target skill
+    print('testing the fucking function')
+    if name.lower() == 'lightning 2':
+        return True
+    elif name.lower() == 'luminaire':
+        return True
+    elif name.lower() == 'fire 2':
+        return True
+    elif name.lower() == 'cyclone':
+        return True
+    elif name.lower() == 'megaton bomb':
+        return True
+    elif name.lower() == 'flare':
+        return True
+    elif name.lower() == 'smoke bomb':
+        return True
+    elif name.lower() == 'crushing blow':
+        return True
+    elif name.lower() == 'ink':
+        return True
+    elif name.lower() == 'sonic wave':
+        return True
+    elif name.lower() == 'earthquake':
+        return True
+    elif name.lower() == 'luminaire':
+        return True
+    elif name.lower() == 'luminaire':
+        return True
+    elif name.lower() == 'luminaire':
+        return True
+    elif name.lower() == 'luminaire':
+        return True
+
+    return False
+
+
 def tech(name, HP=None, MP=None, ATK=None, DFN=None, LVL=None, PWR=None, SPD=None, HIT=None, EVA=None, STM=None, MAG=None, MDF=None, RNG=None, mod=None):
     # The function that return the damage dealt by given 'name' tech with the statistcs of HP,MP,ATK,LVL,PWR,SPD,HIT,EVA
     # ,STM,MAG and the influence of RNG, DFN, EVA, MDF and mod in their effects.
@@ -82,14 +119,17 @@ def tech(name, HP=None, MP=None, ATK=None, DFN=None, LVL=None, PWR=None, SPD=Non
         return [0, 'SHA', 'SLP']
     elif name.lower() == 'grudge':
         return [ATK*3*RNG, 'PHY', '']
-    elif name.lower() == 'cyclone':
-        return 0
-    elif name.lower() == 'cyclone':
-        return 0
-    elif name.lower() == 'cyclone':
-        return 0
-    elif name.lower() == 'cyclone':
-        return 0
+
+    # Yakra Techs
+    elif name.lower() == 'needlespin':
+        return [(ATK-5)*RNG, 'PHY', '']
+    elif name.lower() == 'earthquake':
+        return [(ATK-20)*RNG, 'PHY', '']
+    elif name.lower() == 'spitting rock':
+        return [(ATK/5+HP/25)*RNG, 'PHY', '']
+    elif name.lower() == 'pounce':
+        return [HP/10*RNG, 'PHY', '']
+
     elif name.lower() == 'cyclone':
         return 0
     elif name.lower() == 'cyclone':
