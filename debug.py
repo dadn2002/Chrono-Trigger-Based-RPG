@@ -112,6 +112,10 @@ def Inventory(action, name=None, nametype=None, mod=None):
         return LotofItems
     elif (action.lower() == 'add' or action.lower() == 'remove') and name is not None:
         # print('plus')
+        if nametype.lower() == 'gold':
+            LotofThings['H2'] = int(LotofThings['H2'].value) + int(name)
+            Invobj.save(Inv)
+            return 0
         invlist = Inventory('list')
         continuei = False
         iii = 0
@@ -1218,25 +1222,55 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
             templayer = ReadPlayerData(str(party[j]))
             if int(templayer[1]) <= 0:
                 losecounter = losecounter + 1
-        if losecounter == 3 or lose == True:
+        if losecounter == 3 or lose is True:
             print('All your heroes died')
             wait = input()
             break
         for j in range(len(monster)):
-            if monster[playturn[j]] == 'dead':
+            if monster[j] == 'dead' or monster[j] == 'flew':
                 victorycounter = victorycounter + 1
+        # print('victorycounter', victorycounter, monster)
         if victorycounter == len(monster):
+            # PLACE LOOT TABLE THERE FOR MY SANITY AND IM GOING TO BATH
             print('VICTORY')
-            # PLACE LOOT TABLE THERE FOR SACK OF MY SANITY AND IM GOING TO BATH
+            lootbag = []
+            totalxp = 0
+            totaltp = 0
+            totalgold = 0
+            for j in range(len(monster)):
+                if monster[j] == 'dead':
+                    # print(monsterdata)
+                    # print(monsterdata[j])
+                    # print(monsterdata[j][5])
+                    for k in range(len(monsterdata[j][5])):
+                        lootbag.append(str(monsterdata[j][5][k]))
+                    totalxp = totalxp + int(monsterdata[j][1][0])
+                    totaltp = totaltp + int(monsterdata[j][2][0])
+                    totalgold = totalgold + int(monsterdata[j][3][0])
+            # print(totalxp, totaltp, totalgold, lootbag)
+            Characters[get_column_letter(temprpp01 + 1) + '6'] = Characters[get_column_letter(temprpp01 + 1) + '6'].value + totalxp
+            print('\nLOOT:')
+            for j in range(len(lootbag)):
+                print('[' + str(j + 1) + ']', lootbag[j])
+            print('XP: ' + str(totalxp))
+            print('TP: ' + str(totaltp))
+            print('GOLD: ' + str(totalgold))
+            for j in range(len(lootbag)):
+                Inventory('add', lootbag[j])
+            wait = input()
+            break
+
         print('\n[Round'.upper() + str(i + 1).upper() + ']'.upper() + '\nEnemies:')
         for j in range(len(monster)):
             showhp = ''
-            if monster[j] == 'dead':
-                print('[' + str(j + 1) + '] ' + 'dead')
-            else:
-                if 'vision' in mod:
-                    showhp = ' HP: ' + str(monsterdata[j][0]).replace('[', '').replace(']', '')
-                print('[' + str(j + 1) + '] ' + str(monster[j]) + showhp)
+            # if monster[j] == 'dead':
+            #     print('[' + str(j + 1) + '] ' + 'dead')
+            # if monster[j] == 'flew':
+            #     print('[' + str(j + 1) + '] ' + 'flew')
+            # else:
+            if 'vision' in mod:
+                showhp = ' HP: ' + str(monsterdata[j][0]).replace('[', '').replace(']', '')
+            print('[' + str(j + 1) + '] ' + str(monster[j]) + showhp)
         print('Party:')
         # print(party)
         # print(ReadPlayerData('crono'))
@@ -1249,7 +1283,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                 templayer = ReadPlayerData(str(playturn[i]))
                 print('\n' + playturn[i].upper(), 'turn')
                 if int(templayer[1]) <= 0:
-                    print(playturn[i].upper(), 'is death')
+                    print(playturn[i].upper(), 'is dead')
                     break
                 print('[1] Attack')
                 print('[2] Techs')
@@ -1263,12 +1297,14 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                     for k in range(len(monster)):
                         tempk = k
                         showhp = ''
-                        if monster[k] == 'dead':
-                            print('[' + str(k + 1) + '] ' + 'dead')
-                        else:
-                            if 'vision' in mod:
-                                showhp = ' HP: ' + str(monsterdata[k][0]).replace('[', '').replace(']', '')
-                            print('[' + str(k + 1) + '] ' + str(monster[k]) + showhp)
+                        # if monster[k] == 'dead':
+                        #     print('[' + str(k + 1) + '] ' + 'dead')
+                        # if monster[k] == 'flew':
+                        #     print('[' + str(k + 1) + '] ' + 'flew')
+                        # else:
+                        if 'vision' in mod:
+                            showhp = ' HP: ' + str(monsterdata[k][0]).replace('[', '').replace(']', '')
+                        print('[' + str(k + 1) + '] ' + str(monster[k]) + showhp)
                     print('[' + str(tempk + 2) + '] ' + 'Cancel')
                     chooseattack = int(input()) - 1
                     if chooseattack > k:
@@ -1299,7 +1335,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                             print(playturn[i], 'dealt', str((templife - damage) * -1), 'to the foe')
                             break
                         else:
-                            print('Already Dead')
+                            print('Cannot attack that one')
                 if chooseaction == '2':
                     # Using a tech
                     print('some tech')
@@ -1340,6 +1376,10 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                     break
             else:
                 if monster[playturn[i]] == 'dead':
+                    print('\n' + str(monster[playturn[i]]) + ' still dead')
+                    break
+                elif monster[playturn[i]] == 'flew':
+                    print('\n' + str(monster[playturn[i]]) + ' still running')
                     break
                 print('\n' + str(monster[playturn[i]]) + ' turn')
                 # print(playturn[i], ActionTimer, playturn, monsterdata)
@@ -1369,17 +1409,62 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                         elif choosenumber == 2:
                             columletter = temprpp21
 
-                        print(str(monster[playturn[i]]), 'attacked', choosenone, 'dealing: ',
-                              math.floor((int(varatk) * (256 - int(templayer[4])) / 256)))
-                        # print(type(Characters[get_column_letter(columletter + 2) + '4'].value), type(get_column_letter(columletter+2)), type(varatk), type(templayer[4]))
-                        Characters[get_column_letter(columletter + 2) + '4'] = int(
-                            Characters[get_column_letter(columletter + 2) + '4'].value) - math.floor(
-                            int(varatk) * (256 - int(templayer[4])) / 256)
-                        if Characters[get_column_letter(columletter + 2) + '4'].value <= 0:
-                            Characters[get_column_letter(columletter + 2) + '4'] = 0
-                        playerdatavolatileobj.save(playerdatavolatile)
-                        deathtest = True
-                        break
+                        decideaction = randint(0, 100)
+                        # print(monsterdata[playturn[i]])
+                        # print(monsterdata[playturn[i]][17])
+
+                        if decideaction == 100:
+                            print(str(monster[playturn[i]]), 'ran away')
+                            monsterdata[playturn[i]][0][0] = 0
+                            monster[playturn[i]] = 'flew'
+                            deathtest = True
+                            break
+                        elif 0 <= decideaction < 66:
+                            # Basic Attack Below
+                            print(str(monster[playturn[i]]), 'attacked', choosenone, 'dealing: ',
+                                  math.floor((int(varatk) * (256 - int(templayer[4])) / 256)))
+                            # print(type(Characters[get_column_letter(columletter + 2) + '4'].value), type(get_column_letter(columletter+2)), type(varatk), type(templayer[4]))
+                            Characters[get_column_letter(columletter + 2) + '4'] = int(
+                                Characters[get_column_letter(columletter + 2) + '4'].value) - math.floor(
+                                int(varatk) * (256 - int(templayer[4])) / 256)
+                            if Characters[get_column_letter(columletter + 2) + '4'].value <= 0:
+                                Characters[get_column_letter(columletter + 2) + '4'] = 0
+                            playerdatavolatileobj.save(playerdatavolatile)
+                            deathtest = True
+                            break
+                        else:
+                            # Tech Attack Below
+                            # print('do something')
+                            techchoice = randint(0, len(monsterdata[playturn[i]][17])-1)
+                            thistech = monsterdata[playturn[i]][17][techchoice]
+                            # print(thistech)
+                            # print(monsterdata[playturn[i]][0])
+                            # print(monsterdata[playturn[i]][7])
+                            # print(monsterdata[playturn[i]][9])
+                            # print(monsterdata[playturn[i]][11])
+                            # print(monsterdata[playturn[i]][13])
+                            techdamage = tech(thistech, HP=int(monsterdata[playturn[i]][0][0]), ATK=int(monsterdata[playturn[i]][7][0]), MAG=int(monsterdata[playturn[i]][9][0]), SPD=int(monsterdata[playturn[i]][11][0]), HIT=int(monsterdata[playturn[i]][13][0]), RNG=1)
+                            # print(techdamage)
+
+                            if techdamage[1] == 'PHY':
+                                reducedamage = math.floor(
+                                    techdamage[0] * (256 - int(Characters[get_column_letter(columletter + 1) + '7'].value)) / 256)
+                                print(str(monster[playturn[i]]), 'used', thistech, 'in', choosenone, 'dealing: ', reducedamage)
+                                Characters[get_column_letter(columletter + 2) + '4'] = int(
+                                    Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
+                            elif techdamage[1] == 'LIG' or techdamage[1] == 'SHA' or techdamage[1] == 'FIR' or techdamage[1] == 'WAT':
+                                reducedamage = math.floor(
+                                    techdamage[0] * (101 - int(Characters[get_column_letter(columletter + 1) + '15'].value)) / 101)
+                                print(str(monster[playturn[i]]), 'used', thistech, 'in', choosenone, 'dealing: ', reducedamage)
+                                Characters[get_column_letter(columletter + 2) + '4'] = int(
+                                    Characters[get_column_letter(columletter + 2) + '4'].value) - reducedamage
+                            if Characters[get_column_letter(columletter + 2) + '4'].value <= 0:
+                                Characters[get_column_letter(columletter + 2) + '4'] = 0
+
+                            playerdatavolatileobj.save(playerdatavolatile)
+                            deathtest = True
+                            break
+
                 if deathtest is False:
                     print('You lost')
                     lose = True
@@ -1393,12 +1478,12 @@ subglobalval = globalvar
 print('[Process:', subglobalval, ']', 'Starting')
 globalvar = globalvar + 1
 
-party = ['crono', 'marle', 'lucca']
+party = ['crono', 'magus', 'lucca']
 # NewGamePlayer('crono')
-# NewGamePlayer('marle')
+# NewGamePlayer('magus')
 # NewGamePlayer('lucca')
 # EquipItem('Armor', "Moonbeam Armor", 'crono')
-# LevelUpPlayer('crono', 20)
+# LevelUpPlayer('crono', 50)
 # LevelUpPlayer('magus', 58)
 # LevelUpPlayer('marle', 22)
 # print(ReadMonsterData('cyrus'))
@@ -1408,14 +1493,14 @@ party = ['crono', 'marle', 'lucca']
 
 # ReadPlayerData('crono')
 
-Inventory('add', 'tonic')
-Inventory('add', 'tonic')
-Inventory('add', 'tonic')
-Inventory('add', 'tonic')
-Inventory('add', 'tonic')
-Inventory('add', 'revive')
-Inventory('add', 'revive')
-Inventory('add', 'lapis')
-battle('northern ruins - present', mod='vision')
+# Inventory('add', 'tonic', 'item')
+# Inventory('add', 'tonic', 'item')
+# Inventory('add', 'tonic', 'item')
+# Inventory('add', 'tonic', 'item')
+# Inventory('add', 'tonic', 'item')
+# Inventory('add', 'revive', 'item')
+# Inventory('add', 'revive', 'item')
+# Inventory('add', '10', 'gold')
+# battle('northern ruins - present', mod='vision')
 
 print('[Process:', subglobalval, ']', 'End')
