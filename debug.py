@@ -8,7 +8,17 @@ import openpyxl
 import xlsxwriter
 from random import *
 from openpyxl.utils import get_column_letter
-from deftech import tech, grouptechs
+from deftech import tech, grouptechs, learnTech
+
+
+def ResetGame():
+    NewGamePlayer('crono')
+    NewGamePlayer('lucca')
+    NewGamePlayer('marle')
+    NewGamePlayer('frog')
+    NewGamePlayer('robo')
+    NewGamePlayer('ayla')
+    NewGamePlayer('magus')
 
 
 def colNameToNum(name):
@@ -1030,7 +1040,7 @@ def EquipItem(typew, name, player):
     playerdatavolatileobj.save(playerdatavolatile)
 
 
-def LevelUpPlayer(name, level=1):
+def LevelUpPlayer(name, level=1, mod='', amount=0):
     global globalvar
     localvar = globalvar
     globalvar = globalvar + 1
@@ -1077,6 +1087,8 @@ def LevelUpPlayer(name, level=1):
     temprp12 = colNameToNum(temprp1)  # Reading columns values in Excel is hard
     temprp22 = colNameToNum(temprp2)
 
+    if mod == 'add':
+        Characters[str(get_column_letter(temprp22 + 1)) + '16'] = Characters[str(get_column_letter(temprp22 + 1)) + '16'] + amount
     # print("HP: " + str(Player_Status_Techs[str(get_column_letter(temprp12 + 1)) + "5"].value))
 
     leveline = str(4 + level)
@@ -1101,18 +1113,29 @@ def LevelUpPlayer(name, level=1):
             Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = const2
         elif const == "Evasion":
             temprp4 = str(12)
+            Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = 0
         elif const == "Hit":
             temprp4 = str(11)
+            Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = 0
         elif const == "Magic":
             temprp4 = str(14)
+            Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = 0
         elif const == "Magic Defense":
             temprp4 = str(15)
+            Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = 0
         elif const == "Power":
             temprp4 = str(9)
+            Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = 0
         elif const == "Stamina":
             temprp4 = str(13)
+            Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = 0
         elif const == "Level":
             temprp4 = str(8)
+            Characters[str(get_column_letter(temprp22 + 2)) + temprp4] = 0
+        Characters[str(get_column_letter(temprp22 + 2)) + '7'] = 0
+        Characters[str(get_column_letter(temprp22 + 2)) + '10'] = 0
+        Characters[str(get_column_letter(temprp22 + 1)) + '16'] = 0
+        Characters[str(get_column_letter(temprp22 + 1)) + '17'] = 0
         # print('temprp4', temprp4)
         # print('Characters', str(Characters[str(get_column_letter(temprp22)) + temprp4].value))
         Characters[str(get_column_letter(temprp22 + 1)) + temprp4] = const2
@@ -1453,7 +1476,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
             TechList = TechListabcobj.active
             # print(techp)
             for j in range(3):
-                TechList[techp[j]+'4'] = int(TechList[techp[j]+'4'].value) + totaltp
+                TechList[techp[j] + '4'] = int(TechList[techp[j] + '4'].value) + totaltp
             playerdatavolatileobj.save(playerdatavolatile)
             TechListabcobj.save(TechListabc)
 
@@ -1538,7 +1561,127 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                             print('Cannot attack that one')
                 if chooseaction == '2':
                     # Using a tech
-                    print('some tech')
+                    # print('some tech')
+                    TechListabc = Path("TechList.xlsx")
+                    TechListabcobj = openpyxl.load_workbook(TechListabc, data_only=True)
+                    TechList = TechListabcobj.active
+                    UnableTechs = []
+                    datacolumn = ''
+
+                    if playturn[i].lower() == 'crono':
+                        datacolumn = 'C'
+                    elif playturn[i].lower() == 'lucca':
+                        datacolumn = 'D'
+                    elif playturn[i].lower() == 'marle':
+                        datacolumn = 'E'
+                    elif playturn[i].lower() == 'frog':
+                        datacolumn = 'F'
+                    elif playturn[i].lower() == 'robo':
+                        datacolumn = 'G'
+                    elif playturn[i].lower() == 'ayla':
+                        datacolumn = 'H'
+                    elif playturn[i].lower() == 'magus':
+                        datacolumn = 'I'
+                    else:
+                        print('Please learn how to write zzz')
+
+                    k = 0
+                    while TechList[datacolumn + str(4 + k)].value is not None:
+                        UnableTechs.append(TechList[datacolumn + str(4 + k)].value)
+                        k = k + 1
+                    k = 0  # Be careful with while
+                    # print('UnableTechs', UnableTechs)
+                    print('Choose an tech to use')
+                    for j in range(len(UnableTechs)):
+                        print('[' + str(j + 1) + '] ' + str(UnableTechs[j]) + ' MP COST:' + str(
+                            tech(UnableTechs[j], mod='cost')))
+                    choosetech = int(int(input()) - 1)
+                    # print('Choosedone', UnableTechs[choosetech])
+                    if int(templayer[2]) < int(tech(UnableTechs[choosetech], mod='cost')):
+                        print('Não possui mana o suficiente')
+                        continue
+                    # print(templayer)
+
+                    print('Escolha um alvo:')
+                    tempk = 0
+                    for k in range(len(monster)):
+                        tempk = k
+                        showhp = ''
+                        # if monster[k] == 'dead':
+                        #     print('[' + str(k + 1) + '] ' + 'dead')
+                        # if monster[k] == 'flew':
+                        #     print('[' + str(k + 1) + '] ' + 'flew')
+                        # else:
+                        if 'vision' in mod:
+                            showhp = ' HP: ' + str(monsterdata[k][0]).replace('[', '').replace(']', '')
+                        print('[' + str(k + 1) + '] ' + str(monster[k]) + showhp)
+                    print('[' + str(tempk + 2) + '] ' + 'Cancel')
+                    chooseattack = int(input()) - 1
+                    if chooseattack > k:
+                        print('just to test')
+                        # print('')
+                    else:
+                        # print(chooseattack, monsterdata[chooseattack][0][0], monsterdata)
+                        techdata = tech(UnableTechs[choosetech], HP=templayer[1], MP=templayer[2], ATK=templayer[3],
+                                        DFN=templayer[4], LVL=templayer[5], PWR=templayer[6], SPD=templayer[7],
+                                        HIT=templayer[8], EVA=templayer[9], STM=templayer[10], MAG=templayer[11],
+                                        MDF=templayer[12], RNG=1)
+                        techdamage = 0
+                        templife = int(monsterdata[chooseattack][0][0])
+
+                        if grouptechs(UnableTechs[choosetech]):
+                            # print(monster)
+                            confirmattack = False
+                            for j in range(len(monster)):
+                                if techdata[1] == 'PHY':
+                                    techdamage = int(techdata[0] * (
+                                            256 - int(monsterdata[j][8][0])) / 256)
+                                elif techdata[1] == 'LIG' or techdata[1] == 'SHA' or techdata[1] == 'FIR' or techdata[
+                                    1] == 'WAT':
+                                    techdamage = int(techdata[0] * (
+                                            101 - int(monsterdata[j][10][0])) / 101)
+                                if int(monsterdata[j][0][0]) > 0:
+                                    damage = templife - techdamage
+                                else:
+                                    damage = 0
+
+                                monsterdata[j][0][0] = damage
+                                if int(monsterdata[j][0][0]) <= 0:
+                                    monsterdata[j][0][0] = 0
+                                    # print(type(i), type(j), type(choosetech), type(playturn[i]))
+                                    print(playturn[i], 'using', UnableTechs[choosetech], 'did',
+                                          str((templife - damage) * -1),
+                                          'to', monster[j])
+                                    monster[j] = 'dead'
+                                    confirmattack = True
+                                else:
+                                    print('Cannot attack that one')
+                            if confirmattack is True:
+                                break
+
+                        if techdata[1] == 'PHY':
+                            techdamage = int(techdata[0] * (
+                                    256 - int(monsterdata[chooseattack][8][0])) / 256)
+                        elif techdata[1] == 'LIG' or techdata[1] == 'SHA' or techdata[1] == 'FIR' or techdata[1] == 'WAT':
+                            techdamage = int(techdata[0] * (
+                                    101 - int(monsterdata[chooseattack][10][0])) / 101)
+                        if int(monsterdata[chooseattack][0][0]) > 0:
+                            damage = templife - techdamage
+                        else:
+                            damage = 0
+
+                        monsterdata[chooseattack][0][0] = damage
+                        if int(monsterdata[chooseattack][0][0]) <= 0:
+                            monsterdata[chooseattack][0][0] = 0
+                            print(playturn[i], 'using', UnableTechs[choosetech], 'did',
+                                  str((templife - damage) * -1),
+                                  'to', monster[chooseattack])
+                            monster[chooseattack] = 'dead'
+                            break
+                        else:
+                            print('Cannot attack that one')
+                        TechListabcobj.save(TechListabc)
+
                 if chooseaction == '3':
                     # Using a item
                     invlist = Inventory('list')
@@ -1717,13 +1860,14 @@ print('[Process:', subglobalval, ']', 'Starting')
 globalvar = globalvar + 1
 
 party = ['crono', 'marle', 'lucca']
+# ResetGame()
 # NewGamePlayer('crono')
 # NewGamePlayer('magus')
 # NewGamePlayer('lucca')
 # EquipItem('Armor', "Moonbeam Armor", 'crono')
-LevelUpPlayer('crono', 10)
-LevelUpPlayer('marle', 10)
-LevelUpPlayer('lucca', 10)
+# LevelUpPlayer('crono', 10)
+# LevelUpPlayer('marle', 10)
+# LevelUpPlayer('lucca', 10)
 # print(ReadMonsterData('cyrus'))
 # UseItem('Speed Tab', 'crono', 'crono')
 # UseItem('Power Tab', 'crono', 'crono')
@@ -1739,6 +1883,7 @@ LevelUpPlayer('lucca', 10)
 # Inventory('add', 'revive', 'item')
 # Inventory('add', 'revive', 'item')
 # Inventory('add', '10', 'gold')
+# learnTech('cyclone', 'crono')
 battle('guardia florest - present', mod='vision')
 # battle('yakra - middle age', mod='vision')
 

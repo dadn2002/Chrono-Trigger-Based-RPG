@@ -1,10 +1,13 @@
 
 
 # Just because it's too big
+import openpyxl
+from pathlib import Path
+
 
 def grouptechs(name):
     # Return True if given tech is not target skill
-    print('testing the fucking function')
+    # print('testing the fucking function')
     if name.lower() == 'lightning 2':
         return True
     elif name.lower() == 'luminaire':
@@ -39,47 +42,149 @@ def grouptechs(name):
     return False
 
 
-def tech(name, HP=None, MP=None, ATK=None, DFN=None, LVL=None, PWR=None, SPD=None, HIT=None, EVA=None, STM=None, MAG=None, MDF=None, RNG=None, mod=None):
+def learnTech(name, player):
+    TechListabc = Path("TechList.xlsx")
+    TechListabcobj = openpyxl.load_workbook(TechListabc, data_only=True)
+    TechList = TechListabcobj.active
+
+    datacolumn = ''
+    tpcolumn = ''
+    if player.lower() == 'crono':
+        datacolumn = 'C'
+        tpcolumn = 'K'
+    elif player.lower() == 'lucca':
+        datacolumn = 'D'
+        tpcolumn = 'L'
+    elif player.lower() == 'marle':
+        datacolumn = 'E'
+        tpcolumn = 'M'
+    elif player.lower() == 'frog':
+        datacolumn = 'F'
+        tpcolumn = 'N'
+    elif player.lower() == 'robo':
+        datacolumn = 'G'
+        tpcolumn = 'O'
+    elif player.lower() == 'ayla':
+        datacolumn = 'H'
+        tpcolumn = 'P'
+    elif player.lower() == 'magus':
+        datacolumn = 'I'
+        tpcolumn = 'Q'
+    else:
+        print('TechList Error', player, 'is not a valid character')
+        return 0
+    i = 0
+    testvariable = False
+    testi = 0
+    while TechList[datacolumn + str(4 + i)].value is not None:
+        testi = i
+        if str(TechList[datacolumn + str(4 + i)].value).lower() == name.lower():
+            print('Already know tech')
+            return 0
+        i = i + 1
+    if testvariable is False:
+        tpcost = tech(name.lower(), mod='unlock')
+        if tpcost is None:
+            print(name, 'is not a valid tech')
+            return 0
+        if int(TechList[tpcolumn + '4'].value) - tpcost < 0:
+            print('Not enough tp to learn', name)
+            return 0
+        TechList[tpcolumn + '4'] = int(TechList[tpcolumn + '4'].value) - tpcost
+        TechList[datacolumn + str(4 + testi + 1)] = name
+        print(player, 'learned', name)
+    TechListabcobj.save(TechListabc)
+
+
+def tech(name, HP=None, MP=None, ATK=None, DFN=None, LVL=None, PWR=None, SPD=None, HIT=None, EVA=None, STM=None, MAG=None, MDF=None, RNG=None, mod=''):
     # The function that return the damage dealt by given 'name' tech with the statistcs of HP,MP,ATK,LVL,PWR,SPD,HIT,EVA
     # ,STM,MAG and the influence of RNG, DFN, EVA, MDF and mod in their effects.
     # This function returns an array: [damage, type[4], effects[255][3] where type is PHY or FIR/WAT/LIG/SHA
     # and effects is the set of debuffs : effects[0] = [name, level, duration]
-    print('start the fucking function')
+    # print('start the fucking function')
 
     # Crono main skills
     if name.lower() == 'cyclone':
+        if mod == 'unlock':
+            return 5
+        elif mod == 'cost':
+            return 2
         return [ATK*2.5*RNG, 'PHY', None]
     elif name.lower() == 'wind slash':
+        if mod == 'unlock':
+            return 50
+        elif mod == 'cost':
+            return 2
         return [(LVL+MAG)*4*RNG, 'PHY', None]
     elif name.lower() == 'lightning':
+        if mod == 'unlock':
+            return -1
+        elif mod == 'cost':
+            return 5
         return [(LVL+MAG)*4.8*RNG, 'LIG', None]
     elif name.lower() == 'cleave':
+        if mod == 'unlock':
+            return 150
+        elif mod == 'cost':
+            return 8
         return [ATK*4*RNG, 'PHY', None]
     elif name.lower() == 'lightning 2':
+        if mod == 'unlock':
+            return 400
+        elif mod == 'cost':
+            return 12
         return [(LVL+MAG)*5.6*RNG, 'LIG', None]
     elif name.lower() == 'raise':
+        if mod == 'unlock':
+            return 300
+        elif mod == 'cost':
+            return 10
         return [MAG*10*RNG, '', 'REV']
     elif name.lower() == 'frenzy':
+        if mod == 'unlock':
+            return 600
+        elif mod == 'cost':
+            return 12
         return [(ATK*1.81*RNG)*4, 'PHY', None]
     elif name.lower() == 'luminaire':
+        if mod == 'unlock':
+            return 800
+        elif mod == 'cost':
+            return 20
         return [(LVL+MAG)*20*RNG, 'LIG', 'PAR']
 
     # Lucca main skills
     elif name.lower() == 'flamethrower':
+        if mod == 'unlock':
+            return 5
         return 0
     elif name.lower() == 'hypnowave':
+        if mod == 'unlock':
+            return 40
         return 0
     elif name.lower() == 'fire':
+        if mod == 'unlock':
+            return -1
         return 0
     elif name.lower() == 'napalm':
+        if mod == 'unlock':
+            return 120
         return 0
     elif name.lower() == 'protect':
+        if mod == 'unlock':
+            return 200
         return 0
     elif name.lower() == 'fire 2':
+        if mod == 'unlock':
+            return 400
         return 0
     elif name.lower() == 'megaton bomb':
+        if mod == 'unlock':
+            return 500
         return 0
     elif name.lower() == 'flare':
+        if mod == 'unlock':
+            return 800
         return 0
 
     # Enemies Techs
@@ -190,3 +295,5 @@ def tech(name, HP=None, MP=None, ATK=None, DFN=None, LVL=None, PWR=None, SPD=Non
         return 0
     elif name.lower() == 'cyclone':
         return 0
+    else:
+        return None
