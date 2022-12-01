@@ -1530,7 +1530,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                         print('[' + str(k + 1) + '] ' + str(monster[k]) + showhp)
                     print('[' + str(tempk + 2) + '] ' + 'Cancel')
                     chooseattack = int(input()) - 1
-                    if chooseattack > k:
+                    if chooseattack > tempk:
                         print('')
                     else:
                         # print(chooseattack, monsterdata[chooseattack][0][0], monsterdata)
@@ -1592,95 +1592,114 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                     k = 0  # Be careful with while
                     # print('UnableTechs', UnableTechs)
                     print('Choose an tech to use')
+                    tempabc = 0
                     for j in range(len(UnableTechs)):
+                        tempabc = j
                         print('[' + str(j + 1) + '] ' + str(UnableTechs[j]) + ' MP COST:' + str(
                             tech(UnableTechs[j], mod='cost')))
+                    print('[' + str(j + 2) + '] ' + 'Cancel')
                     choosetech = int(int(input()) - 1)
-                    # print('Choosedone', UnableTechs[choosetech])
-                    if int(templayer[2]) < int(tech(UnableTechs[choosetech], mod='cost')):
-                        print('Não possui mana o suficiente')
-                        continue
-                    # print(templayer)
-
-                    print('Escolha um alvo:')
-                    tempk = 0
-                    for k in range(len(monster)):
-                        tempk = k
-                        showhp = ''
-                        # if monster[k] == 'dead':
-                        #     print('[' + str(k + 1) + '] ' + 'dead')
-                        # if monster[k] == 'flew':
-                        #     print('[' + str(k + 1) + '] ' + 'flew')
-                        # else:
-                        if 'vision' in mod:
-                            showhp = ' HP: ' + str(monsterdata[k][0]).replace('[', '').replace(']', '')
-                        print('[' + str(k + 1) + '] ' + str(monster[k]) + showhp)
-                    print('[' + str(tempk + 2) + '] ' + 'Cancel')
-                    chooseattack = int(input()) - 1
-                    if chooseattack > k:
-                        print('just to test')
+                    print('debug', choosetech, tempabc+1)
+                    if choosetech >= tempabc+1:
+                        print('')
                         # print('')
                     else:
-                        # print(chooseattack, monsterdata[chooseattack][0][0], monsterdata)
-                        techdata = tech(UnableTechs[choosetech], HP=templayer[1], MP=templayer[2], ATK=templayer[3],
-                                        DFN=templayer[4], LVL=templayer[5], PWR=templayer[6], SPD=templayer[7],
-                                        HIT=templayer[8], EVA=templayer[9], STM=templayer[10], MAG=templayer[11],
-                                        MDF=templayer[12], RNG=1)
-                        techdamage = 0
-                        templife = int(monsterdata[chooseattack][0][0])
+                        # print('Choosedone', UnableTechs[choosetech])
+                        if int(templayer[2]) < int(tech(UnableTechs[choosetech], mod='cost')):
+                            print('Não possui mana o suficiente')
+                            continue
+                        # print(templayer)
 
-                        if grouptechs(UnableTechs[choosetech]):
-                            # print(monster)
-                            confirmattack = False
-                            for j in range(len(monster)):
-                                if techdata[1] == 'PHY':
-                                    techdamage = int(techdata[0] * (
-                                            256 - int(monsterdata[j][8][0])) / 256)
-                                elif techdata[1] == 'LIG' or techdata[1] == 'SHA' or techdata[1] == 'FIR' or techdata[
-                                    1] == 'WAT':
-                                    techdamage = int(techdata[0] * (
-                                            101 - int(monsterdata[j][10][0])) / 101)
-                                if int(monsterdata[j][0][0]) > 0:
-                                    damage = templife - techdamage
-                                else:
-                                    damage = 0
+                        print('Escolha um alvo:')
+                        tempk = 0
+                        for k in range(len(monster)):
+                            tempk = k
+                            showhp = ''
+                            # if monster[k] == 'dead':
+                            #     print('[' + str(k + 1) + '] ' + 'dead')
+                            # if monster[k] == 'flew':
+                            #     print('[' + str(k + 1) + '] ' + 'flew')
+                            # else:
+                            if 'vision' in mod:
+                                showhp = ' HP: ' + str(monsterdata[k][0]).replace('[', '').replace(']', '')
+                            print('[' + str(k + 1) + '] ' + str(monster[k]) + showhp)
+                        print('[' + str(tempk + 2) + '] ' + 'Cancel')
+                        chooseattack = int(input()) - 1
+                        if chooseattack > tempk:
+                            print('')
+                            # print('')
+                        else:
+                            # print(chooseattack, monsterdata[chooseattack][0][0], monsterdata)
+                            techdata = tech(UnableTechs[choosetech], HP=templayer[1], MP=templayer[2], ATK=templayer[3],
+                                            DFN=templayer[4], LVL=templayer[5], PWR=templayer[6], SPD=templayer[7],
+                                            HIT=templayer[8], EVA=templayer[9], STM=templayer[10], MAG=templayer[11],
+                                            MDF=templayer[12], RNG=1)
+                            techdamage = 0
+                            templife = int(monsterdata[chooseattack][0][0])
 
-                                monsterdata[j][0][0] = damage
-                                if int(monsterdata[j][0][0]) <= 0:
-                                    monsterdata[j][0][0] = 0
-                                    # print(type(i), type(j), type(choosetech), type(playturn[i]))
-                                    print(playturn[i], 'using', UnableTechs[choosetech], 'did',
-                                          str((templife - damage) * -1),
-                                          'to', monster[j])
-                                    monster[j] = 'dead'
-                                    confirmattack = True
-                                else:
-                                    print('Cannot attack that one')
-                            if confirmattack is True:
+                            if grouptechs(UnableTechs[choosetech]):
+                                # print(monster)
+                                confirmattack = False
+                                for j in range(len(monster)):
+                                    templife = int(monsterdata[j][0][0])
+                                    if techdata[1] == 'PHY':
+                                        techdamage = int(techdata[0] * (
+                                                256 - int(monsterdata[j][8][0])) / 256)
+                                    elif techdata[1] == 'LIG' or techdata[1] == 'SHA' or techdata[1] == 'FIR' or \
+                                            techdata[
+                                                1] == 'WAT':
+                                        techdamage = int(techdata[0] * (
+                                                101 - int(monsterdata[j][10][0])) / 101)
+                                    if int(monsterdata[j][0][0]) > 0:
+                                        damage = templife - techdamage
+                                    else:
+                                        damage = 0
+
+                                    # print('debug', monsterdata[j][0][0], templife, techdamage, techdata[0], damage)
+                                    monsterdata[j][0][0] = damage
+                                    if int(monsterdata[j][0][0]) <= 0:
+                                        monsterdata[j][0][0] = 0
+                                        # print(type(i), type(j), type(choosetech), type(playturn[i]))
+                                        print(playturn[i], 'using', UnableTechs[choosetech], 'did',
+                                              str((templife - damage) * -1),
+                                              'to', monster[j])
+                                        monster[j] = 'dead'
+                                        confirmattack = True
+                                    else:
+                                        print(playturn[i], 'using', UnableTechs[choosetech], 'did',
+                                              str((templife - damage) * -1),
+                                              'to', monster[j])
+                                        confirmattack = True
+                                if confirmattack is True:
+                                    break
+
+                            if techdata[1] == 'PHY':
+                                techdamage = int(techdata[0] * (
+                                        256 - int(monsterdata[chooseattack][8][0])) / 256)
+                            elif techdata[1] == 'LIG' or techdata[1] == 'SHA' or techdata[1] == 'FIR' or techdata[
+                                1] == 'WAT':
+                                techdamage = int(techdata[0] * (
+                                        101 - int(monsterdata[chooseattack][10][0])) / 101)
+                            if int(monsterdata[chooseattack][0][0]) > 0:
+                                damage = templife - techdamage
+                            else:
+                                damage = 0
+
+                            monsterdata[chooseattack][0][0] = damage
+                            # print('debug', monsterdata[chooseattack][0][0], templife, techdamage, techdata[0])
+                            if int(monsterdata[chooseattack][0][0]) <= 0:
+                                monsterdata[chooseattack][0][0] = 0
+                                print(playturn[i], 'using', UnableTechs[choosetech], 'did',
+                                      str((templife - damage) * -1),
+                                      'to', monster[chooseattack])
+                                monster[chooseattack] = 'dead'
                                 break
-
-                        if techdata[1] == 'PHY':
-                            techdamage = int(techdata[0] * (
-                                    256 - int(monsterdata[chooseattack][8][0])) / 256)
-                        elif techdata[1] == 'LIG' or techdata[1] == 'SHA' or techdata[1] == 'FIR' or techdata[1] == 'WAT':
-                            techdamage = int(techdata[0] * (
-                                    101 - int(monsterdata[chooseattack][10][0])) / 101)
-                        if int(monsterdata[chooseattack][0][0]) > 0:
-                            damage = templife - techdamage
-                        else:
-                            damage = 0
-
-                        monsterdata[chooseattack][0][0] = damage
-                        if int(monsterdata[chooseattack][0][0]) <= 0:
-                            monsterdata[chooseattack][0][0] = 0
-                            print(playturn[i], 'using', UnableTechs[choosetech], 'did',
-                                  str((templife - damage) * -1),
-                                  'to', monster[chooseattack])
-                            monster[chooseattack] = 'dead'
-                            break
-                        else:
-                            print('Cannot attack that one')
-                        TechListabcobj.save(TechListabc)
+                            else:
+                                print(playturn[i], 'using', UnableTechs[choosetech], 'did',
+                                      str((templife - damage) * -1),
+                                      'to', monster[chooseattack])
+                                break
+                            TechListabcobj.save(TechListabc)
 
                 if chooseaction == '3':
                     # Using a item
@@ -1691,6 +1710,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                         print('[' + str(j + 1) + '] ' + str(invlist[j][1]) + ' ' + str(invlist[j][2]))
                         if invlist[j + 1][1] == '':
                             break
+                    print('[' + str(tempj + 2) + '] ' + 'Cancel')
                     chooseitem = int(input())
                     itemname = invlist[chooseitem - 1][2]
                     # print(chooseitem, tempj + 2, itemname)
@@ -1862,12 +1882,12 @@ globalvar = globalvar + 1
 party = ['crono', 'marle', 'lucca']
 # ResetGame()
 # NewGamePlayer('crono')
-# NewGamePlayer('magus')
+# NewGamePlayer('marle')
 # NewGamePlayer('lucca')
 # EquipItem('Armor', "Moonbeam Armor", 'crono')
-# LevelUpPlayer('crono', 10)
-# LevelUpPlayer('marle', 10)
-# LevelUpPlayer('lucca', 10)
+LevelUpPlayer('crono', 10)
+LevelUpPlayer('marle', 10)
+LevelUpPlayer('lucca', 10)
 # print(ReadMonsterData('cyrus'))
 # UseItem('Speed Tab', 'crono', 'crono')
 # UseItem('Power Tab', 'crono', 'crono')
@@ -1884,7 +1904,7 @@ party = ['crono', 'marle', 'lucca']
 # Inventory('add', 'revive', 'item')
 # Inventory('add', '10', 'gold')
 # learnTech('cyclone', 'crono')
-battle('guardia florest - present', mod='vision')
+battle('prison towers - present', mod='vision')
 # battle('yakra - middle age', mod='vision')
 
 print('[Process:', subglobalval, ']', 'End')

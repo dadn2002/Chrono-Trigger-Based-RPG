@@ -151,7 +151,8 @@ def tech(name, HP=None, MP=None, ATK=None, DFN=None, LVL=None, PWR=None, SPD=Non
             return 800
         elif mod == 'cost':
             return 20
-        return [(LVL+MAG)*20*RNG, 'LIG', 'PAR']
+        # return [(LVL+MAG)*20*RNG, 'LIG', 'PAR']
+        return [9999, 'LIG', 'PAR']
 
     # Lucca main skills
     elif name.lower() == 'flamethrower':
