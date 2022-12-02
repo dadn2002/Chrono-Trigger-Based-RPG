@@ -2,7 +2,17 @@
 
 # Just because it's too big
 import openpyxl
+from openpyxl.utils import get_column_letter
 from pathlib import Path
+
+
+def colNameToNum(name):
+    pow1 = 1
+    colNum1 = 0
+    for letter in name[::-1]:
+        colNum1 += (int(letter, 36) - 9) * pow1
+        pow1 *= 26
+    return colNum1
 
 
 def grouptechs(name):
@@ -94,6 +104,44 @@ def learnTech(name, player):
         TechList[datacolumn + str(4 + testi + 1)] = name
         print(player, 'learned', name)
     TechListabcobj.save(TechListabc)
+
+
+def mpcost(name, player):
+
+    Characters = Path("Characters.xlsx")
+    Characterscobj = openpyxl.load_workbook(Characters, data_only=True)
+    PlayerData = Characterscobj.active
+    datacolumn = ''
+    if player.lower() == 'crono':
+        datacolumn = 'C'
+    elif player.lower() == 'lucca':
+        datacolumn = 'G'
+    elif player.lower() == 'marle':
+        datacolumn = 'K'
+    elif player.lower() == 'frog':
+        datacolumn = 'O'
+    elif player.lower() == 'robo':
+        datacolumn = 'S'
+    elif player.lower() == 'ayla':
+        datacolumn = 'W'
+    elif player.lower() == 'magus':
+        datacolumn = 'AA'
+    else:
+        print('mpcost Error', player, 'is not a valid character')
+        return 0
+
+    datacolumn = colNameToNum(datacolumn)
+    # print(datacolumn)
+    actualmp = int(PlayerData[get_column_letter(datacolumn+2) + '5'].value)
+    varmpcost = int(tech(name, mod='cost'))
+    # print(actualmp)
+    if actualmp - varmpcost < 0:
+        return 0
+    else:
+        print('worked')
+        PlayerData[get_column_letter(datacolumn + 2) + '5'] = actualmp - varmpcost
+        Characterscobj.save(Characters)
+        return 1
 
 
 def tech(name, HP=None, MP=None, ATK=None, DFN=None, LVL=None, PWR=None, SPD=None, HIT=None, EVA=None, STM=None, MAG=None, MDF=None, RNG=None, mod=''):

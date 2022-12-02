@@ -7,8 +7,10 @@ import os
 import openpyxl
 import xlsxwriter
 from random import *
+
 from openpyxl.utils import get_column_letter
-from deftech import tech, grouptechs, learnTech
+
+from deftech import tech, grouptechs, learnTech, mpcost
 
 
 def ResetGame():
@@ -1236,6 +1238,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
     temprpp01 = colNameToNum(temprpp0)
     temprpp11 = colNameToNum(temprpp1)
     temprpp21 = colNameToNum(temprpp2)
+    temppd = [temprpp01, temprpp11, temprpp21]
     # Uses a dinamical file to register buffs/mobs hp and etc
     monster = list
     mobn = int
@@ -1499,6 +1502,9 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
         # print(ReadPlayerData('crono'))
         for j in range(len(party)):
             templayer = ReadPlayerData(str(party[j]))
+            # print(party[j], templayer)
+            # templayer2 = ReadPlayerData('crono')
+            # print('player', 'crono', templayer2)
             print('[' + str(j + 1) + '] ' + str(party[j]) + ' HP: ' + str(templayer[1]) + ' MP: ' + str(templayer[2]))
 
         while 1 != 0:
@@ -1599,7 +1605,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                             tech(UnableTechs[j], mod='cost')))
                     print('[' + str(j + 2) + '] ' + 'Cancel')
                     choosetech = int(int(input()) - 1)
-                    print('debug', choosetech, tempabc+1)
+                    # print('debug', choosetech, tempabc+1)
                     if choosetech >= tempabc+1:
                         print('')
                         # print('')
@@ -1630,6 +1636,7 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                             # print('')
                         else:
                             # print(chooseattack, monsterdata[chooseattack][0][0], monsterdata)
+
                             techdata = tech(UnableTechs[choosetech], HP=templayer[1], MP=templayer[2], ATK=templayer[3],
                                             DFN=templayer[4], LVL=templayer[5], PWR=templayer[6], SPD=templayer[7],
                                             HIT=templayer[8], EVA=templayer[9], STM=templayer[10], MAG=templayer[11],
@@ -1671,6 +1678,18 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                                               'to', monster[j])
                                         confirmattack = True
                                 if confirmattack is True:
+                                    # print(UnableTechs[choosetech], playturn[i])
+
+                                    if playturn[i] == party[0]:
+                                        Characters[get_column_letter(temprpp01 + 2) + '5'] = int(templayer[2]) - tech(UnableTechs[choosetech], mod='cost')
+                                    elif playturn[i] == party[1]:
+                                        Characters[get_column_letter(temprpp11 + 2) + '5'] = int(templayer[2]) - tech(
+                                            UnableTechs[choosetech], mod='cost')
+                                    elif playturn[i] == party[2]:
+                                        Characters[get_column_letter(temprpp21 + 2) + '5'] = int(templayer[2]) - tech(
+                                            UnableTechs[choosetech], mod='cost')
+                                    playerdatavolatileobj.save(playerdatavolatile)
+
                                     break
 
                             if techdata[1] == 'PHY':
@@ -1686,6 +1705,20 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                                 damage = 0
 
                             monsterdata[chooseattack][0][0] = damage
+
+                            if playturn[i] == party[0]:
+                                Characters[get_column_letter(temprpp01 + 2) + '5'] = int(templayer[2]) - tech(
+                                    UnableTechs[choosetech], mod='cost')
+                            elif playturn[i] == party[1]:
+                                Characters[get_column_letter(temprpp11 + 2) + '5'] = int(templayer[2]) - tech(
+                                    UnableTechs[choosetech], mod='cost')
+                            elif playturn[i] == party[2]:
+                                Characters[get_column_letter(temprpp21 + 2) + '5'] = int(templayer[2]) - tech(
+                                    UnableTechs[choosetech], mod='cost')
+                            playerdatavolatileobj.save(playerdatavolatile)
+
+                            TechListabcobj.save(TechListabc)
+
                             # print('debug', monsterdata[chooseattack][0][0], templife, techdamage, techdata[0])
                             if int(monsterdata[chooseattack][0][0]) <= 0:
                                 monsterdata[chooseattack][0][0] = 0
@@ -1699,7 +1732,6 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                                       str((templife - damage) * -1),
                                       'to', monster[chooseattack])
                                 break
-                            TechListabcobj.save(TechListabc)
 
                 if chooseaction == '3':
                     # Using a item
@@ -1761,7 +1793,8 @@ def battle(maps, mob1=None, mob2=None, mob3=None, mob4=None, mob5=None, mod=None
                     choosenumber = randint(0, 2)
                     choosenone = party[choosenumber]
                     templayer = ReadPlayerData(choosenone)
-                    # print(templayer)
+                    templayer2 = ReadPlayerData('crono')
+                    # print('monster', 'crono', templayer2)
                     # print(templayer[1])
                     if int(templayer[1]) > 0:
                         # print(choosenone, 'is alive')
